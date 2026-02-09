@@ -1,5 +1,7 @@
 use gpui::{Action as _, App};
-use settings::{LanguageSettingsContent, SettingsContent};
+use settings::{
+    AudioInputDeviceName, AudioOutputDeviceName, LanguageSettingsContent, SettingsContent,
+};
 use std::sync::Arc;
 use strum::IntoDiscriminant as _;
 use ui::IntoElement;
@@ -17,6 +19,11 @@ const DEFAULT_STRING: String = String::new();
 /// A default empty string reference. Useful in `pick` functions for cases either in dynamic item fields, or when dealing with `settings::Maybe`
 /// to avoid the "NO DEFAULT" case.
 const DEFAULT_EMPTY_STRING: Option<&String> = Some(&DEFAULT_STRING);
+
+const DEFAULT_AUDIO_OUTPUT: AudioOutputDeviceName = AudioOutputDeviceName(None);
+const DEFAULT_EMPTY_AUDIO_OUTPUT: Option<&AudioOutputDeviceName> = Some(&DEFAULT_AUDIO_OUTPUT);
+const DEFAULT_AUDIO_INPUT: AudioInputDeviceName = AudioInputDeviceName(None);
+const DEFAULT_EMPTY_AUDIO_INPUT: Option<&AudioInputDeviceName> = Some(&DEFAULT_AUDIO_INPUT);
 
 macro_rules! concat_sections {
     (@vec, $($arr:expr),+ $(,)?) => {{
@@ -6883,14 +6890,16 @@ fn collaboration_page() -> SettingsPage {
                     pick: |settings_content| {
                         settings_content
                             .audio
+                            .as_ref()?
+                            .output_audio_device
                             .as_ref()
-                            .map(|a| &a.output_audio_device)
+                            .or(DEFAULT_EMPTY_AUDIO_OUTPUT)
                     },
                     write: |settings_content, value| {
                         settings_content
                             .audio
                             .get_or_insert_default()
-                            .output_audio_device = value.flatten();
+                            .output_audio_device = value;
                     },
                 }),
                 metadata: None,
@@ -6904,14 +6913,16 @@ fn collaboration_page() -> SettingsPage {
                     pick: |settings_content| {
                         settings_content
                             .audio
+                            .as_ref()?
+                            .input_audio_device
                             .as_ref()
-                            .map(|a| &a.input_audio_device)
+                            .or(DEFAULT_EMPTY_AUDIO_INPUT)
                     },
                     write: |settings_content, value| {
                         settings_content
                             .audio
                             .get_or_insert_default()
-                            .input_audio_device = value.flatten();
+                            .input_audio_device = value;
                     },
                 }),
                 metadata: None,
